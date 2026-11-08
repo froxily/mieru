@@ -1,0 +1,37 @@
+{
+  "name": "mieru-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "MIERU — Commerce Intelligence Studio web interface",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "preview": "vite preview",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "5.105.0",
+    "plotly.js-cartesian-dist-min": "4.1.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-router-dom": "7.18.4"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.8",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "axe-core": "4.14.0",
+    "jsdom": "30.1.3",
+    "prettier": "3.9.9",
+    "typescript": "7.0.2",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
+  }
+}

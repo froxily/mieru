@@ -1,0 +1,27 @@
+MIERU
+Copyright (c) 2026 Akshat
+
+The source code in this repository is licensed under the MIT License (see LICENSE).
+
+Third-party data
+----------------
+The Olist marketplace demo uses the "Brazilian E-Commerce Public Dataset by Olist"
+(https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce), downloaded from
+https://github.com/olist/work-at-olist-data. The dataset is licensed under the
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International licence
+(CC BY-NC-SA 4.0, https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+The raw dataset is not stored in this repository; `python run.py` downloads it.
+The repository contains aggregate research results computed from it (outputs/,
+baselines/), and the container image also contains a database derived from it
+(data/marketplace.duckdb). Those derived files are distributed under
+CC BY-NC-SA 4.0, not under the MIT License: they may be used
+only for non-commercial purposes, with attribution to Olist, and any adaptation of
+them must be shared under the same licence. Changes made to the original data:
+tables were loaded into DuckDB, joined, aggregated and filtered as described in
+sql/01-07, and unused tables were removed from the runtime database.
+
+MIERU is a non-commercial portfolio and academic project.
+
+The synthetic demonstration files in demo/ and frontend/public/samples/ describe a
+fictional company and fictional customers.

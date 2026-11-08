@@ -1,0 +1,113 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - uses: actions/cache@v5
+        with:
+          path: data/raw
+          key: olist-raw-${{ runner.os }}-${{ hashFiles('src/data.py') }}
+      - run: python run.py
+      - run: python -m pytest -q -W default
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm --prefix frontend ci --ignore-scripts
+      - run: npm --prefix frontend run format:check
+      - run: npm --prefix frontend run typecheck
+      - run: npm --prefix frontend test
+      - run: npm --prefix frontend run build
+  docker:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      SOURCE: ${{ github.server_url }}/${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build image
+        run: |
+          docker build --build-arg VERSION="$GITHUB_SHA" \
+            --label "org.opencontainers.image.source=$SOURCE" \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" \
+            -t mieru:ci .
+      - name: Smoke test container
+        run: |
+          set -euo pipefail
+          MIERU_SESSION_SECRET="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
+          export MIERU_SESSION_SECRET
+          docker run -d --name mieru -e MIERU_SESSION_SECRET -p 8000:8000 mieru:ci
+          deadline=$((SECONDS + 60))
+          until curl -sf --max-time 2 http://localhost:8000/api/health > /dev/null; do
+            test "$SECONDS" -lt "$deadline"
+            sleep 1
+          done
+          curl -sf http://localhost:8000/api/olist/overview | python3 -c 'import json,sys; k=json.load(sys.stdin)["kpis"]; assert isinstance(k,list) and k'
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/)" = "200"
+          test "$(docker exec mieru id -u)" != "0"
+          test "$(curl -s -o /dev/null -w '%{http_code}' -F 'file=@demo/mieru-demo-retail-orders.csv;type=text/csv' http://localhost:8000/api/datasets)" = "403"
+          curl -sf -D "$RUNNER_TEMP/headers.txt" -o "$RUNNER_TEMP/upload.json" -H 'X-MIERU-Request: 1' \
+            -F 'file=@demo/mieru-demo-retail-orders.csv;type=text/csv' http://localhost:8000/api/datasets
+          cookie=$(grep -i '^set-cookie:' "$RUNNER_TEMP/headers.txt" | head -1 | sed -E 's/^[Ss]et-[Cc]ookie: *([^;]*).*/\1/')
+          grep -i '^set-cookie:' "$RUNNER_TEMP/headers.txt" | grep -qi 'secure'
+          dataset_id=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["dataset_id"])' "$RUNNER_TEMP/upload.json")
+          deadline=$((SECONDS + 90))
+          while true; do
+            status=$(curl -sf -H "Cookie: $cookie" "http://localhost:8000/api/datasets/$dataset_id" \
+              | python3 -c 'import json,sys; print(json.load(sys.stdin)["dataset"]["status"])')
+            if [ "$status" = "ready" ]; then break; fi
+            test "$status" != "failed"
+            test "$SECONDS" -lt "$deadline"
+            sleep 1
+          done
+          curl -sf -H "Cookie: $cookie" "http://localhost:8000/api/datasets/$dataset_id/dashboard" \
+            | python3 -c 'import json,sys; k=json.load(sys.stdin)["kpis"]; assert next(x["value"] for x in k if x["metric_id"]=="net_revenue")==31727330'
+          test "$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:8000/api/datasets/$dataset_id/dashboard")" = "404"
+      - name: Print container logs on failure
+        if: failure()
+        run: docker logs mieru
+      - name: Remove container
+        if: always()
+        run: docker rm -f mieru
+      - name: Log in to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          REGISTRY_USER: ${{ github.actor }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$REGISTRY_TOKEN" | docker login ghcr.io -u "$REGISTRY_USER" --password-stdin
+      - name: Push the tested image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          image="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/mieru"
+          docker tag mieru:ci "$image:$GITHUB_SHA"
+          docker tag mieru:ci "$image:latest"
+          docker push "$image:$GITHUB_SHA"
+          docker push "$image:latest"
+      - name: Log out of GHCR
+        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker logout ghcr.io

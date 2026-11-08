@@ -1,0 +1,43 @@
+{
+  "snapshot_of": "Verified Olist research pipeline outputs (python run.py, 14/14 tests) before the MIERU extension",
+  "snapshot_taken": "2026-10-26",
+  "metrics_generated_at_utc": "2026-10-14T23:27:22+00:00",
+  "headline": "Missing the promised delivery SLA date multiplies the odds of a severe detractor review (1–2 stars) by 16.3× (adjusted OR, 95% CI: [15.40, 17.25], p < 0.0001), while the top 18.6% of sellers generate 80% of platform GMV.",
+  "files": {
+    "01_cohort_retention_heatmap.png": {
+      "sha256": "472e3d1a44022f17a193edbc4010d6ef7f217be3a0922045a4f8f16bed283c47",
+      "bytes": 780228
+    },
+    "02_sla_breach_penalty_curve.png": {
+      "sha256": "39722317131dd6779994b6718264b61d541f95674ce44851b1cff542c98574db",
+      "bytes": 633122
+    },
+    "03_seller_pareto_lorenz.png": {
+      "sha256": "ea2fb7fe3dee143ebafbf2413d60cee62ec22544f56518492396e2d2ef97ca21",
+      "bytes": 542974
+    },
+    "04_logit_odds_ratios_forest.png": {
+      "sha256": "1298d940c470c80adbd157b5ef6d2e92cc98a26e5b62dde882c9764234953fc6",
+      "bytes": 470790
+    },
+    "metrics_summary.json": {
+      "sha256": "da09d6e4bf7618ff79850aced2a0d4b27980f58307f3380a82ffc9480ac0e290",
+      "bytes": 56061
+    }
+  },
+  "warehouse": {
+    "path": "data/marketplace.duckdb",
+    "sha256": "6b618832631d192751e8f3c6d4bbc7ab320ae1ed7d918576597684eda56f90af",
+    "bytes": 119812096
+  },
+  "raw_csv_sha256": {
+    "olist_customers_dataset.csv": "c26c17f59f3027a6a0dbeb8f1fa373c38f3323ecc84f225a8f4820e5bb288df8",
+    "olist_geolocation_dataset.csv": "b514f6fc991b9566aeba02aa5d67e2c3630f034b60a0e05aa0d082a3b66d88d6",
+    "olist_order_items_dataset.csv": "4f6abdbbc94036d0df4a76fa0520c072e31a40119d70f7f370fba1e2285d2bcb",
+    "olist_order_payments_dataset.csv": "61674868ed7b872aac3dcd95bf774448a88f6426b183f21be55f75af021ffdec",
+    "olist_order_reviews_dataset.csv": "012b61c7593e34f51fa614efdf802b9c7056ce6aae5307ddb93236e7cfc797d7",
+    "olist_orders_dataset.csv": "8df58ef3d2d7e9944010f7beecd9b75367f5588ec6e3c91cec19ae3345ef9ecf",
+    "olist_products_dataset.csv": "3e6569628a17fbc75fd206ee357b59e20364b9afa90f5b6cd5b4d624c58aa9cc",
+    "olist_sellers_dataset.csv": "31eb9bd50d684526a78f2389413ce61841e97692de7b828fe7d956b534586312"
+  }
+}
