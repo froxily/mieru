@@ -2,6 +2,8 @@
 
 > **Upload a sales spreadsheet and get trustworthy, explainable analytics automatically, with every number auditable.**
 
+**Live demo:** https://mieru.braveocean-6888a480.centralindia.azurecontainerapps.io (hosted on Azure Container Apps and scaled to zero when idle, so the first visit can take up to a minute to wake it).
+
 MIERU (*mieru*, Japanese for "to be visible") is a full-stack e-commerce analytics product with two workspaces:
 
 | Workspace | What it does |
